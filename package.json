@@ -9,8 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/**/*.test.ts",
-    "test:rls": "node --import tsx --test tests/rls/*.test.ts",
+    "test": "node --import tsx --test \"tests/**/*.test.ts\"",
+    "test:rls": "node --import tsx --test \"tests/rls/*.test.ts\"",
+    "test:unit": "node --import tsx --test \"tests/unit/*.test.ts\"",
     "db:setup": "node --import tsx scripts/db-apply.ts",
     "db:reset": "node --import tsx scripts/db-apply.ts --reset",
     "worker": "node --import tsx scripts/worker.ts"
