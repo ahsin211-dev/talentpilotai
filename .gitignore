@@ -21,6 +21,7 @@ pnpm-debug.log*
 
 # testing
 coverage
+tsconfig.tsbuildinfo
 
 # misc
 .DS_Store
