@@ -74,6 +74,29 @@ export async function createPresignedUpload(params: {
   return { url, key, bucket, kmsKeyId };
 }
 
+/** Server-side encrypted upload (used by the candidate upload server action). */
+export async function putObject(params: {
+  candidateId: string;
+  fileName: string;
+  mimeType: string;
+  body: Buffer | Uint8Array;
+}): Promise<{ bucket: string; key: string; kmsKeyId?: string }> {
+  const bucket = serverEnv.aws.documentsBucket;
+  const kmsKeyId = serverEnv.aws.kmsKeyId || undefined;
+  const key = buildDocumentKey(params.candidateId, params.fileName);
+  await client().send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: params.body,
+      ContentType: params.mimeType,
+      ServerSideEncryption: kmsKeyId ? "aws:kms" : "AES256",
+      SSEKMSKeyId: kmsKeyId,
+    }),
+  );
+  return { bucket, key, kmsKeyId };
+}
+
 /** Short-lived download URL for an already-authorized request. */
 export async function createPresignedDownload(params: {
   bucket: string;
