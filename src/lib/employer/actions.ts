@@ -7,7 +7,7 @@ import { unlockRequestSchema } from "@/lib/validation/schemas";
 import { createCheckoutSession, isStripeConfigured } from "@/lib/stripe/stripe";
 import { logAudit } from "@/lib/audit";
 
-export type ActionResult = { ok?: true; error?: string };
+export type ActionResult = { ok?: true; error?: string } | null;
 
 /** Save / remove a favourite (RLS gates this to subscribed employers). */
 export async function toggleFavourite(_prev: ActionResult, formData: FormData): Promise<ActionResult> {

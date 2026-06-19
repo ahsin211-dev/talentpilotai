@@ -45,7 +45,7 @@ export function UnlockRequestForm({
       <input type="hidden" name="candidateProfileId" value={profileId} />
       <textarea name="message" className="input" rows={2} placeholder="Optional message to the candidate" />
       {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
-      {state?.ok ? <p className="text-sm text-green-600">Request sent. You'll be notified when the candidate responds.</p> : null}
+      {state?.ok ? <p className="text-sm text-green-600">Request sent. You&apos;ll be notified when the candidate responds.</p> : null}
       <Submit label="Request contact" />
     </form>
   );

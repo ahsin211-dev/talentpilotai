@@ -69,7 +69,7 @@ export default async function CandidateProfilePage({ params }: { params: { id: s
           <div>Qualification: {card.highest_qualification ?? "—"}</div>
         </dl>
         <p className="mt-4 text-xs text-slate-400">
-          Surname, contact details and identity documents are withheld for privacy and become available only with the candidate's explicit consent.
+          Surname, contact details and identity documents are withheld for privacy and become available only with the candidate&apos;s explicit consent.
         </p>
       </div>
 

@@ -17,7 +17,7 @@ export function isStripeConfigured(): boolean {
 export function stripe(): Stripe {
   if (!isStripeConfigured()) throw new Error("Stripe is not configured");
   if (cached) return cached;
-  cached = new Stripe(serverEnv.stripe.secretKey, { apiVersion: "2024-10-28.acacia" });
+  cached = new Stripe(serverEnv.stripe.secretKey);
   return cached;
 }
 

@@ -10,7 +10,7 @@ import { isStorageConfigured, putObject } from "@/lib/storage/s3";
 import { enqueueJob } from "@/lib/queue";
 import { logAudit } from "@/lib/audit";
 
-export type ActionResult = { ok?: true; error?: string };
+export type ActionResult = { ok?: true; error?: string } | null;
 
 /** Save intake details into the PRIVATE table (RLS: candidate self only). */
 export async function saveIntake(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
