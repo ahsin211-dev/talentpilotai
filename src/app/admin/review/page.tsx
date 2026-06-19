@@ -2,11 +2,14 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { DocumentReviewActions } from '@/components/admin/document-review-actions';
+import { AiExtractionEditor } from '@/components/admin/ai-extraction-editor';
+import { RetryJobButton } from '@/components/admin/case-stage-selector';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { confidenceLabel } from '@/lib/ai/confidence';
 
 export default async function AdminReviewPage() {
   const supabase = await createClient();
@@ -26,6 +29,13 @@ export default async function AdminReviewPage() {
     .order('created_at', { ascending: false })
     .limit(20);
 
+  const { data: failedJobs } = await supabase
+    .from('document_processing_jobs')
+    .select('id, status, error_message, attempt_count, created_at')
+    .eq('status', 'failed')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-slate-900 text-white">
@@ -40,6 +50,26 @@ export default async function AdminReviewPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {failedJobs && failedJobs.length > 0 && (
+          <section>
+            <h2 className="text-lg font-semibold mb-4 text-red-700">Failed processing jobs</h2>
+            <div className="space-y-2">
+              {failedJobs.map((job) => (
+                <Card key={job.id} className="border-red-200">
+                  <CardContent className="py-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-mono">{job.id.slice(0, 8)}…</p>
+                      <p className="text-xs text-red-600">{job.error_message}</p>
+                      <p className="text-xs text-slate-500">Attempts: {job.attempt_count}</p>
+                    </div>
+                    <RetryJobButton jobId={job.id} />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section>
           <h2 className="text-lg font-semibold mb-4">Documents pending review</h2>
           <div className="space-y-3">
@@ -74,24 +104,30 @@ export default async function AdminReviewPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-4">AI extraction results (raw — not employer visible)</h2>
-          <div className="space-y-3">
+          <h2 className="text-lg font-semibold mb-4">
+            AI extraction results
+            <span className="text-sm font-normal text-slate-500 ml-2">(raw output — never employer visible)</span>
+          </h2>
+          <div className="space-y-4">
             {aiResults?.length ? (
-              aiResults.map((result) => (
-                <Card key={result.id}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">
-                      Confidence: {result.confidence_score ?? 'N/A'}% ·{' '}
-                      {(result.candidate_documents as { document_type?: string })?.document_type}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="text-xs bg-slate-100 p-3 rounded-lg overflow-auto max-h-40">
-                      {JSON.stringify(result.extracted_fields ?? result.raw_ai_output, null, 2)}
-                    </pre>
-                  </CardContent>
-                </Card>
-              ))
+              aiResults.map((result) => {
+                const label = confidenceLabel(result.confidence_score ?? 0);
+                return (
+                  <Card key={result.id}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Badge variant={label === 'high' ? 'success' : label === 'medium' ? 'warning' : 'danger'}>
+                          {result.confidence_score ?? 0}%
+                        </Badge>
+                        {(result.candidate_documents as { document_type?: string })?.document_type}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <AiExtractionEditor extraction={result} />
+                    </CardContent>
+                  </Card>
+                );
+              })
             ) : (
               <p className="text-slate-500">No AI results pending review.</p>
             )}

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 const PUBLIC_ROUTES = ['/', '/login', '/register', '/auth/callback'];
+const PUBLIC_API_PREFIXES = ['/api/webhooks', '/api/jobs/process-document'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
@@ -31,9 +32,9 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const pathname = request.nextUrl.pathname;
 
-  const isPublic = PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith('/api/webhooks')
-  );
+  const isPublic =
+    PUBLIC_ROUTES.some((route) => pathname === route) ||
+    PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   if (!user && !isPublic && !pathname.startsWith('/login') && !pathname.startsWith('/register')) {
     const url = request.nextUrl.clone();

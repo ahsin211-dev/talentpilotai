@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClipboardList, FileSearch, Users, Shield } from 'lucide-react';
+import { ClipboardList, FileSearch, Users, Shield, GitBranch, Plug } from 'lucide-react';
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -94,7 +94,7 @@ export default async function AdminDashboard() {
               <CardContent className="pt-6">
                 <FileSearch className="h-8 w-8 text-teal-600 mb-3" />
                 <h3 className="font-semibold">Review Queue</h3>
-                <p className="text-sm text-slate-500 mt-1">Review documents and AI extractions</p>
+                <p className="text-sm text-slate-500 mt-1">Review documents, AI extractions, and failed jobs</p>
                 {(reviewQueue ?? 0) > 0 && (
                   <Badge variant="warning" className="mt-2">{reviewQueue} pending</Badge>
                 )}
@@ -110,12 +110,33 @@ export default async function AdminDashboard() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/admin/cases">
+            <Card className="hover:border-teal-400 transition-colors h-full">
+              <CardContent className="pt-6">
+                <GitBranch className="h-8 w-8 text-teal-600 mb-3" />
+                <h3 className="font-semibold">Case Management</h3>
+                <p className="text-sm text-slate-500 mt-1">Manage candidate case stages</p>
+              </CardContent>
+            </Card>
+          </Link>
           <Link href="/admin/audit">
             <Card className="hover:border-teal-400 transition-colors h-full">
               <CardContent className="pt-6">
                 <ClipboardList className="h-8 w-8 text-teal-600 mb-3" />
                 <h3 className="font-semibold">Audit Logs</h3>
                 <p className="text-sm text-slate-500 mt-1">View sensitive access history</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/admin/integrations">
+            <Card className="hover:border-teal-400 transition-colors h-full">
+              <CardContent className="pt-6">
+                <Plug className="h-8 w-8 text-teal-600 mb-3" />
+                <h3 className="font-semibold">Integrations</h3>
+                <p className="text-sm text-slate-500 mt-1">WhatsApp, CRM, webhooks, and failed jobs</p>
+                {(failedJobs ?? 0) > 0 && (
+                  <Badge variant="danger" className="mt-2">{failedJobs} failed jobs</Badge>
+                )}
               </CardContent>
             </Card>
           </Link>

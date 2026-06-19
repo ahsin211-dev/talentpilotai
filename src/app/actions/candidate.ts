@@ -5,6 +5,8 @@ import { createServiceClient } from '@/lib/supabase/admin';
 import { candidateIntakeSchema } from '@/lib/validation/schemas';
 import { writeAuditLog } from '@/lib/audit/log';
 import { revalidatePath } from 'next/cache';
+import { dispatchEvent } from '@/lib/integrations/dispatcher';
+import { setCandidateCaseStage } from '@/lib/case/stages';
 
 export async function submitCandidateIntake(formData: FormData) {
   const raw = {
@@ -119,6 +121,12 @@ export async function respondToUnlockRequest(unlockRequestId: string, approved: 
       unlock_request_id: unlockRequestId,
       approved_at: new Date().toISOString(),
     }, { onConflict: 'candidate_id,employer_id' });
+
+    await setCandidateCaseStage(candidate.id, 'contact_unlocked');
+    await dispatchEvent('contact.approved', {
+      candidate_id: candidate.id,
+      employer_id: request.employer_id,
+    });
   }
 
   await writeAuditLog({

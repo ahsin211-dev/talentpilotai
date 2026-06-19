@@ -54,6 +54,20 @@ export const profileApprovalSchema = z.object({
   editedFields: z.record(z.string(), z.unknown()).optional(),
 });
 
+export const aiExtractionEditSchema = z.object({
+  extractionId: z.string().uuid(),
+  headline: z.string().optional(),
+  summary: z.string().optional(),
+  skills: z.array(z.string()).optional(),
+  occupationTitle: z.string().optional(),
+  yearsExperience: z.coerce.number().int().min(0).max(50).optional(),
+});
+
+export const caseStageUpdateSchema = z.object({
+  candidateId: z.string().uuid(),
+  stageSlug: z.string().min(1),
+});
+
 export const employerSearchSchema = z.object({
   occupation: z.string().optional(),
   skills: z.array(z.string()).optional(),

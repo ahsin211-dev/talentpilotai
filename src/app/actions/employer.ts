@@ -6,6 +6,7 @@ import { unlockRequestSchema } from '@/lib/validation/schemas';
 import { writeAuditLog } from '@/lib/audit/log';
 import { hasActiveSubscription } from '@/lib/auth/session';
 import { revalidatePath } from 'next/cache';
+import { dispatchEvent } from '@/lib/integrations/dispatcher';
 
 export async function requestContactUnlock(input: unknown) {
   const parsed = unlockRequestSchema.safeParse(input);
@@ -45,6 +46,11 @@ export async function requestContactUnlock(input: unknown) {
     resourceId: parsed.data.candidateId,
     employerId: employer.id,
     candidateId: parsed.data.candidateId,
+  });
+
+  await dispatchEvent('contact.unlock_requested', {
+    candidate_id: parsed.data.candidateId,
+    employer_id: employer.id,
   });
 
   revalidatePath('/employer');
