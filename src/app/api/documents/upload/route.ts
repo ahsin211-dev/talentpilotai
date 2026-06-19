@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { documentUploadSchema } from '@/lib/validation/schemas';
 import { buildDocumentKey, createUploadUrl, BUCKET } from '@/lib/aws/s3';
-import { queueDocumentProcessing, processDocumentJobStub } from '@/lib/jobs/document-processing';
+import { queueDocumentProcessing, processDocumentJob } from '@/lib/jobs/document-processing';
 import { writeAuditLog } from '@/lib/audit/log';
 
 export async function POST(request: NextRequest) {
@@ -94,10 +94,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const jobId = await queueDocumentProcessing(documentId);
+    const { jobId, mode } = await queueDocumentProcessing(documentId);
 
-    // Phase 1: process inline stub (Phase 2: async worker)
-    await processDocumentJobStub(jobId);
+    // Inline fallback when QStash is not configured
+    if (mode === 'inline') {
+      await processDocumentJob(jobId);
+    }
 
     await writeAuditLog({
       actorUserId: user.id,
@@ -105,9 +107,10 @@ export async function PATCH(request: NextRequest) {
       action: 'document.processing_queued',
       resourceType: 'document_processing_job',
       resourceId: jobId,
+      metadata: { mode },
     });
 
-    return NextResponse.json({ jobId, status: 'queued' });
+    return NextResponse.json({ jobId, status: mode === 'inline' ? 'completed' : 'queued' });
   } catch (err) {
     console.error('Processing queue error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

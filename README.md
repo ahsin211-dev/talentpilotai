@@ -45,6 +45,7 @@ cp .env.example .env.local
 2. Run migrations in order:
    - `supabase/migrations/001_initial_schema.sql`
    - `supabase/migrations/002_rls_policies.sql`
+   - `supabase/migrations/003_phase2_integrations.sql`
 3. Add your keys to `.env.local`
 
 ### 3. Create an admin user
@@ -66,7 +67,22 @@ Create an encrypted bucket with KMS in `ap-southeast-2` and set AWS env vars.
 
 Create an employer subscription price and set Stripe env vars. Forward webhooks to `/api/webhooks/stripe`.
 
-### 6. Run locally
+### 6. Configure Phase 2 services
+
+| Service | Env vars | Purpose |
+|---------|----------|---------|
+| Anthropic Claude | `ANTHROPIC_API_KEY` | Document extraction, CV rewrite, occupation mapping |
+| AWS Textract | `AWS_*` | OCR on uploaded documents |
+| Upstash QStash | `QSTASH_TOKEN`, signing keys | Async document processing jobs |
+| WhatsApp | `WHATSAPP_BUSINESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` | Candidate notifications |
+| GoHighLevel | `GOHIGHLEVEL_API_KEY`, `GOHIGHLEVEL_LOCATION_ID` | CRM contact sync |
+| Recruitment CRM | `CRM_SYNC_URL`, `CRM_API_KEY` | External CRM webhook |
+| E-signature | `ESIGNATURE_WEBHOOK_SECRET` | Consent signing webhook at `/api/webhooks/esignature` |
+
+Without `QSTASH_TOKEN`, document processing runs inline after upload (dev mode).
+Without `ANTHROPIC_API_KEY`, a mock extraction is used for testing.
+
+### 7. Run locally
 
 ```bash
 npm run dev
@@ -98,7 +114,21 @@ For full RLS integration tests, run `supabase/tests/rls_policies.test.sql` again
 - [x] Stripe employer subscription setup
 - [x] Basic audit logging
 
-## Phase 2 (Planned)
+## Phase 2 (Implemented)
+
+- [x] Full OCR pipeline (AWS Textract)
+- [x] Claude extraction, CV rewrite, occupation code mapping
+- [x] PII redaction and confidence scoring
+- [x] Admin AI editing and approval workflow
+- [x] Async job queue via Upstash QStash (inline fallback for dev)
+- [x] Case management stage transitions
+- [x] WhatsApp Business notifications
+- [x] GoHighLevel + CRM sync
+- [x] E-signature webhook integration
+- [x] Webhook delivery retry and admin integrations dashboard
+- [x] Failed job retry from admin review queue
+
+## Phase 3 (Planned)
 
 - Full OCR (Textract) + Claude extraction pipeline
 - Occupation code AI mapping
