@@ -9,6 +9,8 @@ import { logAuditEvent } from "@/lib/security/audit";
 export async function POST(request: Request) {
   try {
     const env = getServerEnv(["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]);
+    const stripeSecretKey = env.STRIPE_SECRET_KEY;
+    const stripeWebhookSecret = env.STRIPE_WEBHOOK_SECRET;
     const signature = (await headers()).get("stripe-signature");
 
     if (!signature) {
@@ -16,11 +18,11 @@ export async function POST(request: Request) {
     }
 
     const rawBody = await request.text();
-    const stripe = new Stripe(env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(stripeSecretKey);
     const event = stripe.webhooks.constructEvent(
       rawBody,
       signature,
-      env.STRIPE_WEBHOOK_SECRET
+      stripeWebhookSecret
     );
 
     const supabase = createSupabaseAdminClient();

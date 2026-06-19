@@ -21,7 +21,13 @@ const serverEnvSchema = z.object({
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
-export function getServerEnv(requiredKeys: Array<keyof ServerEnv> = []) {
+type RequiredServerEnv<K extends keyof ServerEnv> = ServerEnv & {
+  [P in K]-?: Exclude<ServerEnv[P], undefined>;
+};
+
+export function getServerEnv<const K extends keyof ServerEnv>(
+  requiredKeys: readonly K[] = []
+): RequiredServerEnv<K> {
   const parsed = serverEnvSchema.parse(process.env);
 
   for (const key of requiredKeys) {
@@ -30,5 +36,5 @@ export function getServerEnv(requiredKeys: Array<keyof ServerEnv> = []) {
     }
   }
 
-  return parsed;
+  return parsed as RequiredServerEnv<K>;
 }
